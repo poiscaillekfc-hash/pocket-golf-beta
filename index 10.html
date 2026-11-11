@@ -1,0 +1,151 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#76c9e6"><title>Pocket Golf — Green Valley · Bêta 0.9</title><style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#14364a;font-family:system-ui,-apple-system,'Arial Rounded MT Bold',Arial,sans-serif;touch-action:none}#stage{position:absolute;inset:0;overflow:hidden;touch-action:none;background:#8ed8e7}canvas{width:100%;height:100%;display:block;touch-action:none}#ui{position:absolute;inset:0;z-index:4;pointer-events:none}.hit{pointer-events:auto;cursor:pointer;touch-action:manipulation}#top{position:absolute;top:2%;left:2%;right:2%;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.pill{border:2px solid #d9ffef8c;background:linear-gradient(180deg,#204c5edb,#143e4ce6);box-shadow:0 5px 0 #173b4775,0 9px 18px #173b4790;color:#fff9e5;border-radius:18px;padding:10px 15px;font-weight:900;text-shadow:0 2px 1px #17364a80;white-space:nowrap;line-height:1.12}.pill small{font-size:11px;color:#c3f2db;font-weight:800}.pill strong{font-size:18px}.act{border:2px solid #d9ffef8c;background:#1b5968e5;color:#fff;padding:10px 14px;min-width:47px;border-radius:17px;font-size:21px;font-weight:900;box-shadow:0 4px 0 #103843af;cursor:pointer}.act:active{transform:translateY(2px)}#hud{position:absolute;left:2%;right:2%;bottom:2%;display:flex;align-items:flex-end;justify-content:space-between}.meter{width:min(43vw,510px);height:29px;background:#113d4ce5;border:3px solid #f6ffe5;border-radius:99px;padding:4px;box-shadow:0 4px 0 #0d303ca0;overflow:hidden}.fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#65dc4a 0%,#e7ed4a 43%,#ffc24c 68%,#f37c42 100%);transition:width .03s}.hint{font-size:13px;font-weight:850;color:#eaffdf;text-shadow:0 2px 5px #12424f;max-width:260px;text-align:right}.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:3%;background:#153e50a8;backdrop-filter:blur(4px);pointer-events:auto}.overlay.hidden{display:none}.panel{position:relative;width:min(570px,95%);max-height:94%;overflow:auto;background:linear-gradient(180deg,#faffeb,#d7f2d3);border:5px solid #fff9e0;border-radius:30px;padding:24px 28px 23px;color:#234955;box-shadow:0 8px 0 #3e8a60,0 24px 48px #103b5490;text-align:center}.eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#458f74;font-weight:1000}.panel h1{font-weight:1000;letter-spacing:-1.3px;font-size:clamp(27px,4vw,44px);margin:5px 0 8px;color:#185164;text-shadow:0 2px #fff}.panel p{font-weight:650;font-size:14px;line-height:1.4;color:#55747b;margin:8px 0 11px}.btn{display:block;width:100%;border:0;border-radius:18px;padding:13px;font-size:18px;font-weight:1000;color:#fff;background:linear-gradient(#6cda46,#35a943);box-shadow:0 5px 0 #237c46,0 7px 18px #37915b66;margin:12px 0 0;cursor:pointer}.btn.secondary{background:linear-gradient(#64b9ce,#368caa);box-shadow:0 5px 0 #2a687a}.btn:active{transform:translateY(3px)}.world{display:flex;gap:12px;align-items:center;text-align:left;border:2px solid #b7dbbd;background:#ffffffa8;border-radius:19px;padding:9px 14px;margin:10px 0;font-weight:900}.world .emoji{font-size:31px}.world small{color:#758c89;font-weight:650}.world.lock{opacity:.55}.stamp{display:inline-block;background:#e7f3ce;border:1px solid #b5d39a;border-radius:999px;padding:4px 12px;color:#568052;font-size:11px;font-weight:950}.legend{font-size:11px!important;color:#64857f!important;margin-top:12px!important}@media(orientation:portrait){#stage{inset:auto;top:0;left:100vw;width:100dvh;height:100vw;transform-origin:top left;transform:rotate(90deg)}.panel{padding:15px 23px}.panel h1{font-size:28px}.panel p{font-size:12px}.btn{padding:9px;margin-top:9px;font-size:15px}.world{padding:6px 10px;margin:6px 0}.world .emoji{font-size:24px}#top .pill{padding:6px 11px}#top .pill strong{font-size:15px}.act{padding:5px 9px}.meter{height:22px}}
+</style></head><body><div id="stage"><canvas id="game" width="1280" height="720"></canvas><div id="ui"><div id="top"><div class="pill"><strong>⛳ GREEN VALLEY</strong><br><small id="sub">BÊTA 0.9 · DÉMO VISUELLE</small></div><div class="pill" id="wind">VENT : →→</div><div style="display:flex;gap:7px"><div class="pill" id="shots">COUPS : 0 / 3</div><button class="act hit" id="pause" aria-label="Pause">Ⅱ</button></div></div><div id="hud"><div class="pill"><strong id="score">TROU 1 · PAR 3</strong><br><small>1 coup = 3 pts · 2 = 2 · 3 = 1</small></div><div style="text-align:center"><div class="meter"><div class="fill" id="fill"></div></div><small style="color:#f5ffe3;font-weight:900;text-shadow:0 1px 3px #133;">PUISSANCE</small></div><div class="hint" id="hint">Glisse le doigt vers l'arrière pour tirer</div></div><div class="overlay" id="overlay"><div class="panel" id="panel"></div></div></div></div><script>
+(()=>{'use strict';const W=1280,H=720,canvas=document.getElementById('game'),ctx=canvas.getContext('2d',{alpha:false}),stage=document.getElementById('stage');const UI={ov:document.getElementById('overlay'),panel:document.getElementById('panel'),fill:document.getElementById('fill'),wind:document.getElementById('wind'),shots:document.getElementById('shots'),hint:document.getElementById('hint')};let scene='home',last=0,time=0,shots=0,power=0,aim=null,ball=null,particles=[],wavelets=[],done=false,locked=false,wind=.38,transition=0;
+let seed=11;function rnd(){seed=(Math.imul(seed,1664525)+1013904223)|0;return(seed>>>0)/4294967296;}const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),mix=(a,b,t)=>a+(b-a)*t;function polygon(points,fill,stroke=null,lw=1){ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)ctx.lineTo(...points[i]);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke()}}function ell(x,y,rx,ry,fill,rot=0){ctx.beginPath();ctx.ellipse(x,y,rx,ry,rot,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill()}function line(points,color,w=2){ctx.beginPath();ctx.moveTo(...points[0]);for(let i=1;i<points.length;i++)ctx.lineTo(...points[i]);ctx.lineWidth=w;ctx.strokeStyle=color;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke()}function roundRect(x,y,w,h,r,fill){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill()}function grad(x0,y0,x1,y1,colors){let g=ctx.createLinearGradient(x0,y0,x1,y1);for(const [p,c] of colors)g.addColorStop(p,c);return g;}function blob(x,y,rx,ry,c,angle=0){ell(x,y,rx,ry,c,angle)}
+// The same color rules and cel-shaded shape language are used by distant mountains, soil, water and objects.
+const C={sky:'#86d5ee',skyLight:'#d8f1f3',mount:'#668fbb',mountDark:'#527ca7',hill:'#6baa7a',hillLight:'#91c88b',pine:'#2e917e',pineDark:'#246f74',dirt:'#bf7650',dirtDark:'#915439',grass:'#83cc46',grassTop:'#b7e95e',tree:'#945838',woodLight:'#e39a53',rock:'#8b93a8',rockDark:'#626b88',water:'#22aece'};
+function hillY(x){return 490+26*Math.sin((x-105)/210)+17*Math.sin(x/115)-.12*Math.max(0,x-660)}
+// Physical green surface: single smooth piece broken only by the water's collision gap.
+function ground(x){x=clamp(x,0,W);const pts=[[0,500],[100,496],[220,509],[305,520],[382,541],[450,554],[570,552],[626,524],[735,485],[850,468],[955,433],[1060,411],[1155,405],[1280,422]];let i=0;while(i<pts.length-2&&x>pts[i+1][0])i++;let p=pts[i],q=pts[i+1],f=(x-p[0])/(q[0]-p[0]);f=f*f*(3-2*f);return mix(p[1],q[1],f)+Math.sin(x*.017)*2.6;}
+const WATER_A=451,WATER_B=615,HOLE_X=1155,TEE_X=105,R=10;
+function isWater(x){return x>WATER_A&&x<WATER_B}
+function cloud(x,y,s,alpha=1){ctx.save();ctx.globalAlpha=alpha;const shapes=[[0,0,65,25],[-39,3,34,19],[-17,-13,33,29],[28,-13,30,30],[65,3,29,17]];shapes.forEach(([a,b,rx,ry])=>ell(x+a*s,y+b*s,rx*s,ry*s,'#fff7e6'));ell(x,y+10*s,84*s,13*s,'#d4eaf1');ctx.restore()}
+function background(){ctx.fillStyle=grad(0,0,0,H,[[0,'#58bff0'],[.5,'#b1e7ed'],[1,'#ecf9d2']]);ctx.fillRect(0,0,W,H);
+ // light is consistent for all scene objects, top left
+ ell(147,99,81,81,'#fff4af');ell(147,99,59,59,'#fff9d2');ctx.globalAlpha=.3;ell(147,99,122,122,'#fff8b2');ctx.globalAlpha=1;
+ cloud(420+Math.sin(time*.11)*28,83,.58,.82);cloud(833+Math.sin(time*.07)*30,91,.8,.74);cloud(1128+Math.sin(time*.10)*24,164,.43,.64);
+ // mountain silhouettes separated by atmospheric color, never separate photo styles
+ polygon([[0,285],[85,200],[150,241],[273,130],[382,259],[496,180],[640,306],[735,163],[805,236],[933,104],[1077,274],[1150,175],[1280,258],[1280,410],[0,410]],'#79a8c7');
+ polygon([[0,308],[180,209],[274,285],[405,141],[527,307],[650,265],[764,183],[871,295],[1000,137],[1133,309],[1280,261],[1280,430],[0,430]],'#6795b8');
+ polygon([[355,211],[405,141],[458,223],[427,201],[409,181],[396,198],[383,181]],'#f2f4df');polygon([[900,210],[1000,137],[1062,235],[1024,217],[1007,180],[988,195],[968,170]],'#edf4df');
+ polygon([[0,367],[160,309],[280,329],[395,296],[480,326],[580,274],[710,305],[820,267],[955,311],[1100,269],[1280,315],[1280,507],[0,507]],'#74ba9d');
+ polygon([[0,410],[120,348],[243,371],[340,339],[520,385],[685,328],[820,378],[970,337],[1120,367],[1280,345],[1280,519],[0,519]],'#4da795');
+ // far hillside striped sun areas
+ polygon([[0,417],[190,371],[371,398],[517,365],[692,404],[803,354],[966,402],[1140,352],[1280,375],[1280,509],[0,509]],'#65b18a');
+ for(let i=0;i<55;i++){let x=(i*113+31)%1280,y=380+Math.sin(x*.022)*20+(i%7)*7;pine(x,y,15+(i%6)*5,'far');}
+ // waterfall is *part of the cliff*, framed by eroded rock, shared light
+ polygon([[639,360],[786,335],[839,382],[813,490],[650,509],[620,438]],'#648b9b');polygon([[668,362],[744,354],[743,479],[700,499],[682,481]],'#2faaca');polygon([[697,365],[727,361],[729,491],[709,503]],'#a0edf1');
+ for(let i=0;i<8;i++)line([[678+i*7,370],[682+i*7,412],[678+i*7,486]],i%2?'#4bd0e3':'#d5ffff',1.5+(i%3));
+ ell(727,504,95,18,'#a0eeed');ell(727,509,64,9,'#f9ffe4');
+ // unified middle-distance wooded islands and tree canopy
+ for(let i=0;i<18;i++){let x=(i*173+73)%1380-40,y=429+Math.sin(x*.014)*12,sc=.36+(i%4)*.09;tree(x,y,sc,'far')}
+ // wandering river behind the playable soil
+ polygon([[0,493],[380,460],[530,492],[780,506],[1010,469],[1280,458],[1280,595],[0,595]],'#4baec1');
+ polygon([[0,507],[371,480],[536,508],[775,520],[1002,489],[1280,484],[1280,530],[977,510],[757,547],[529,526],[367,502],[0,528]],'#7fd8d0');
+ for(let i=0;i<22;i++){const x=(i*83+30)%1280,y=515+Math.sin(x*.022)*10;line([[x,y],[x+16,y-3]],'#d3f4e1',1.5)}
+}
+function pine(x,y,s,depth='near'){const f=depth==='far'?'#418c89':'#2e8c73',dark=depth==='far'?'#407d87':'#256d63';polygon([[x-2*s/10,y],[x+2*s/10,y],[x+s/6,y+21]],'#836d58');for(let k=0;k<3;k++){let h=s*(1-.13*k);polygon([[x,y-s*1.8+k*s*.4],[x-h*.62,y-s*.4+k*s*.28],[x+h*.62,y-s*.4+k*s*.28]],k%2?f:dark)}}
+function tree(x,base,s=1,depth='near'){ctx.save();ctx.translate(x,base);ctx.scale(s,s);const far=depth==='far',angle=far?0:Math.sin(time*.65+x*.06)*.006;ctx.rotate(angle);
+ // roots appear below and in front of the soil line, to physically merge tree into ground
+ const trunk=far?'#64806a':'#895438',lit=far?'#83a477':'#c47740';
+ polygon([[-10,4],[-22,-28],[-23,-76],[-43,-114],[-35,-120],[-8,-88],[8,-115],[19,-110],[13,-80],[20,-31],[33,2],[10,-5],[2,-19],[-9,3]],trunk);
+ polygon([[-15,-12],[-18,-72],[-31,-109],[-26,-111],[-7,-80],[-4,-23]],lit);line([[-5,-66],[-4,-26],[7,-2]],'#6c4734',3);
+ const greens=far?['#3e8c7a','#5ca589','#73bd8d']:['#2f8155','#3a984e','#6fc547','#a8d64a'];
+ // leaf masses not flat circles: same chunky shapes as forests and ground foliage
+ let canopy=[[-50,-131,43,36],[-13,-151,49,40],[34,-138,45,37],[-34,-166,34,29],[14,-182,39,33],[65,-151,30,30],[-67,-109,26,25],[0,-123,51,33]];
+ canopy.forEach(([a,b,w,h],i)=>ell(a,b,w,h,greens[Math.min(i%greens.length,greens.length-1)]));
+ for(let i=0;i<13;i++){let a=-81+(i*43)%170,b=-134-((i*29)%60);ell(a,b,14+(i%3)*4,9+(i%3)*3,greens[(i+2)%greens.length],-.2)}
+ ctx.restore()}
+// A single soil painter uses one silhouette and common tonal palette. Water is a deliberate recessed channel.
+function soil(){let shapes=[[0,WATER_A],[WATER_B,W]];
+ for(const [start,end] of shapes){ctx.save();ctx.beginPath();ctx.moveTo(start,ground(start)-13);for(let x=start+3;x<=end;x+=3)ctx.lineTo(x,ground(x)-13);ctx.lineTo(end,H+20);ctx.lineTo(start,H+20);ctx.closePath();ctx.clip();
+ ctx.fillStyle=grad(0,450,0,720,[[0,'#d58b56'],[.3,'#b76e49'],[1,'#88503a']]);ctx.fillRect(start,360,end-start+4,H-360);
+ // nested patches of shade in earth; never rectangular blocks
+ for(let i=0;i<90;i++){let x=start+rnd()*(end-start),y=ground(x)+23+rnd()*190,r=8+rnd()*29;ell(x,y,r,r*.32,i%3===0?'#e4a36d55':i%2?'#84483144':'#8e553b55',rnd()*.3)}
+ // simplified strata and small pebbles: coherent graphic rhythm rather than pasted-on earth texture
+ for(let k=0;k<4;k++){let pts=[];for(let x=start;x<=end;x+=14)pts.push([x,ground(x)+38+k*50+Math.sin(x*.03+k*2)*5]);line(pts,k%2?'#d89a6d55':'#874d3c5a',5)}
+ for(let i=0;i<110;i++){let x=start+rnd()*(end-start),y=ground(x)+24+rnd()*190;ell(x,y,2+rnd()*5,2+rnd()*3,i%3?'#edb47d88':'#724d3b8a',rnd()*.4)}
+ ctx.restore();
+ // the upper grassy fringe is physically glued to the dirt silhouette
+ ctx.beginPath();ctx.moveTo(start,ground(start)-16);for(let x=start+3;x<=end;x+=3)ctx.lineTo(x,ground(x)-16);ctx.lineTo(end,ground(end)+6);for(let x=end-3;x>=start;x-=3)ctx.lineTo(x,ground(x)+6);ctx.closePath();ctx.fillStyle=grad(0,380,0,555,[[0,'#bcdf4e'],[1,'#68b73c']]);ctx.fill();
+ let pts=[];for(let x=start;x<=end;x+=3)pts.push([x,ground(x)-10]);line(pts,'#3b8c39',5);line(pts,'#bcf46e',2);
+ // Tiny tufts share the same ground color family, and sway as animated living vegetation
+ for(let x=start+7;x<end;x+=19){const y=ground(x)-12,i=Math.floor(x/19);ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(time*1.1+i)*.08);line([[0,4],[-3,-5],[-3,-10]],'#388b3f',1.4);line([[0,4],[3,-7],[6,-9]],'#8dcc42',1.8);if(i%5===0){ell(-4,-9,2.5,2.5,'#ffefc5');ell(0,-11,2.5,2.5,'#fff3cb');ell(-2,-10,2,2,'#f6ae56')}ctx.restore()}
+ }
+ // vertical banks are rocky, carved and moist where water meets them
+ for(const [x,d] of [[WATER_A,1],[WATER_B,-1]]){let y=ground(x);polygon([[x,y-15],[x+d*20,y+4],[x+d*29,y+28],[x+d*18,y+50],[x,y+63]],'#81634f');polygon([[x+d*6,y],[x+d*17,y+6],[x+d*23,y+25],[x+d*12,y+42]],'#ae9471');ell(x+d*9,y+10,11,8,'#638b59');}
+}
+function river(){const a=WATER_A,b=WATER_B,top=530;ctx.save();ctx.beginPath();ctx.moveTo(a-4,ground(a)+2);ctx.bezierCurveTo(a+15,553,a+28,560,a+55,563);ctx.lineTo(b-51,563);ctx.bezierCurveTo(b-30,559,b-18,550,b+4,ground(b)+2);ctx.lineTo(b+4,H+10);ctx.lineTo(a-4,H+10);ctx.closePath();ctx.clip();ctx.fillStyle=grad(0,518,0,H,[[0,'#54d6dd'],[.45,'#23acd0'],[1,'#15779d']]);ctx.fillRect(a,520,b-a,H-520);
+ // bank-shadows and bright wavelets remain behind the terrain fringe
+ ell((a+b)/2,562,94,23,'#7ee5d8');for(let j=0;j<15;j++){let xx=a+((j*43+time*21)%(b-a)),yy=566+(j*19)%130;line([[xx,yy],[xx+9+Math.sin(time+j)*4,yy-2]],j%3===0?'#d8ffeb':'#8df2e7',1.5+(j%2));}
+ for(let i=0;i<8;i++){let x=a+12+i*23,y=575+(i%3)*35;ell(x,y,6+(i%3)*3,2,'#b0f7e0a3');}
+ ctx.restore();}
+function rock(x,base,s=1,decor=false){ctx.save();ctx.translate(x,base);ctx.scale(s,s);ell(0,0,43,10,'#355b4c55');polygon([[-47,-2],[-41,-29],[-18,-55],[15,-63],[44,-40],[56,-10],[42,0]],'#697792');polygon([[-41,-29],[-18,-55],[15,-63],[24,-35],[0,-13],[-35,-10]],'#a1a9b7');polygon([[24,-35],[44,-40],[56,-10],[42,0],[9,-9]],'#5f6680');polygon([[-19,-51],[11,-58],[15,-51],[-8,-40]],'#c8bfba');line([[-25,-35],[-15,-28],[-22,-16]],'#686e8b',2);if(!decor){ell(-35,-3,17,7,'#539c50');ell(29,-2,21,8,'#5ba643');}ctx.restore()}
+function cabin(x,base,s=1){ctx.save();ctx.translate(x,base);ctx.scale(s,s);
+ // ground contact: shadow + stone foundation partly covered by soil/grass
+ ell(4,3,120,15,'#285e4766');polygon([[-107,-12],[107,-12],[102,7],[-102,7]],'#68727d');polygon([[-102,-12],[-83,-25],[87,-25],[105,-12]],'#b2b1a5');
+ // wall and shaded side, identical light direction to tree and rocks
+ polygon([[-85,-22],[-85,-126],[46,-126],[46,-22]],'#b87748');polygon([[46,-126],[91,-107],[91,-22],[46,-22]],'#825538');polygon([[-85,-126],[-31,-168],[52,-145],[90,-119],[46,-126]],'#704b3d');polygon([[-97,-124],[-22,-181],[60,-146],[50,-132],[-25,-161],[-87,-113]],'#91604e');polygon([[-86,-131],[-26,-174],[48,-145],[43,-135],[-24,-162],[-81,-122]],'#c59168');
+ for(let i=0;i<8;i++){let a=-85+i*17;line([[a,-120],[a,-28]],i%2?'#9e653b':'#d89a5d',2)}
+ // timber supports and warm window
+ roundRect(-66,-100,47,48,4,'#794d34');roundRect(-60,-94,35,36,2,'#ffcc6c');roundRect(-55,-88,25,26,2,'#ffe79c');line([[-43,-94],[-43,-59]],'#8e5c3d',4);line([[-60,-77],[-25,-77]],'#8e5c3d',3);
+ roundRect(10,-77,29,55,3,'#734832');ell(33,-50,2,2,'#f8d87d');
+ // chimney and gentle, unobtrusive smoke
+ polygon([[37,-169],[37,-199],[58,-199],[58,-154]],'#9594a0');polygon([[35,-201],[60,-201],[59,-194],[35,-194]],'#b2b1b7');for(let j=0;j<3;j++){let f=(time*.14+j/3)%1;ctx.globalAlpha=(1-f)*.18;ell(50+Math.sin(time+j)*7,-213-f*55,10+f*10,12+f*11,'#fefbf3');}ctx.globalAlpha=1;
+ // green roof and flowers physically link to nearby meadow
+ line([[-79,-132],[-22,-165],[40,-143]],'#79b444',5);for(let k=0;k<9;k++)ell(-72+k*13,-130-Math.sin(k/8*Math.PI)*21,7,4,k%3?'#7fc446':'#abe665');
+ for(let k=0;k<10;k++){let xx=-92+k*21;ell(xx,0,13,8,k%3?'#63ad47':'#7dc14a');if(k%4===0){ell(xx+4,-8,3,4,'#f9d5d2');ell(xx+8,-6,3,4,'#fef5bf')}}ctx.restore()}
+function plankBridge(x1,x2,y){line([[x1-11,y-3],[x2+9,y-3]],'#5a4b46',14);for(let i=0;i<8;i++){let xx=mix(x1,x2,i/7);polygon([[xx-12,y-12],[xx+4,y-12],[xx+6,y+5],[xx-11,y+5]],i%2?'#bc804e':'#d89955','#815137',2)}line([[x1-4,y-15],[x1-5,y-39],[x2,y-46],[x2+5,y-17]],'#9b6c4c',3);}
+function lily(x,y){ell(x,y,24,8,'#247f64');ell(x,y-3,18,6,'#83bc4b');polygon([[x,y-3],[x+14,y-9],[x+12,y-1]],'#2c9469');}
+function flower(x,y,size=1){line([[x,y],[x+2,y-15*size]],'#3c973f',2);for(let a=0;a<5;a++){let ang=a*6.283/5;ell(x+2+Math.cos(ang)*6*size,y-15*size+Math.sin(ang)*6*size,4*size,4*size,'#fcf1e0');}ell(x+2,y-15*size,3.5*size,3.5*size,'#edc448')}
+function drawWorld(){background();
+ // far and near decorations use the exact same forest, stone and soil drawing methods
+ // earth is one shared terrain construction from left to right
+ soil();river();
+ // cottage and trees are rooted and partially occluded by the same grass and small stones
+ cabin(350,ground(350)-5,.82);
+ tree(266,ground(266)-6,.91);tree(836,ground(836)-8,.70);
+ rock(764,ground(764)-3,.83);rock(990,ground(990)-4,.55);
+ rock(433,ground(433)+17,.37);rock(625,ground(625)+11,.37);
+ // add occluding tufts and flowers to break any sprite-like seams
+ for(let j=0;j<43;j++){let x=(j*317+25)%W;if(isWater(x))continue;let y=ground(x)-13;ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(time*1.3+j)*.04);ell(0,0,6,4,j%3?'#69b845':'#a0d954');if(j%6===0)flower(3,1,.62);ctx.restore()}
+ lily(507,630);lily(568,675);
+ // Close foreground plants frame the scene, painted with the same colors and light as the playable meadow.
+ polygon([[0,700],[0,660],[24,648],[48,678],[65,634],[88,670],[120,650],[152,705]],'#2e7657');
+ polygon([[1142,720],[1185,663],[1202,681],[1224,642],[1247,674],[1280,648],[1280,720]],'#307c5a');
+ ell(40,681,61,38,'#3d915d');ell(91,706,62,35,'#60aa59');ell(1238,696,81,45,'#438c58');
+ for(const [x,y,s] of [[28,674,.95],[78,690,.72],[1243,676,.93],[1207,697,.62]])flower(x,y,s);
+ // shoreline soft waterline touches the grass edge without a hard rectangle
+ line([[461,555],[482,561],[508,566]],'#d8f8dc',2);line([[562,564],[594,556],[606,548]],'#b9f5e5',2);
+ // lip of the cup follows sloped soil surface
+ let gy=ground(HOLE_X)-11;ell(HOLE_X,gy+1,20,5,'#204e2c');ell(HOLE_X,gy,12,3,'#0d3025');line([[HOLE_X,gy],[HOLE_X,gy-69]],'#effefb',4);polygon([[HOLE_X,gy-68],[HOLE_X+35,gy-57],[HOLE_X,gy-43]],'#f25052');polygon([[HOLE_X+2,gy-67],[HOLE_X+31,gy-57],[HOLE_X+2,gy-60]],'#ff9b5c');
+}
+function particle(x,y,vx,vy,col,life=.5,size=3){particles.push({x,y,vx,vy,col,life,max:life,size});}
+function burst(x,y,type){const colors=type==='water'?['#a8f9ea','#fffef5','#2fd5dd']:type==='win'?['#fff5a5','#fabc4d','#ff808a','#c0f66b']:['#b6db64','#f8f5c5','#c18853'];let n=type==='win'?48:12;for(let i=0;i<n;i++){let angle=rnd()*6.283,s=rnd()*(type==='win'?240:95)+12;particle(x,y,Math.cos(angle)*s,Math.sin(angle)*s-30,colors[i%colors.length],.3+rnd()*.55,2+rnd()*4)}}
+function setUI(){UI.shots.textContent='COUPS : '+shots+' / 3';UI.wind.textContent=wind===0?'PAS DE VENT':('VENT : '+(wind>0?'→':'←').repeat(Math.max(1,Math.min(3,Math.round(Math.abs(wind)*3)))));UI.fill.style.width=(power*100)+'%';UI.hint.textContent=aim?'Relâche pour tirer':scene==='game'?'Glisse en arrière pour viser':'';}
+function reset(){ball={x:TEE_X,y:ground(TEE_X)-R-13,vx:0,vy:0,spin:0,moving:false};shots=0;aim=null;power=0;done=false;locked=false;transition=0;particles=[];wind=.37;setUI()}
+function show(title,emoji,text,primary,cb,secondary=null,secCb=null){scene='menu';UI.ov.classList.remove('hidden');UI.panel.innerHTML=`<div class="eyebrow">Pocket Golf · Bêta 0.9</div><div style="font-size:39px">${emoji}</div><h1>${title}</h1><p>${text}</p><button class="btn" id="primary">${primary}</button>${secondary?`<button class="btn secondary" id="secondary">${secondary}</button>`:''}<p class="legend">Une scène homogène · Un trou test · Aucun changement à la visée</p>`;document.getElementById('primary').onclick=cb;if(secondary)document.getElementById('secondary').onclick=secCb;}
+function home(){show('POCKET GOLF','⛳','GREEN VALLEY · Un seul style cartoon pour le paysage, les arbres, la cabane, l’eau et le terrain.','JOUER ▶',worlds,'Recommencer la démo',play)}
+function worlds(){scene='worlds';UI.ov.classList.remove('hidden');UI.panel.innerHTML=`<div class="eyebrow">Choisir un monde</div><h1>Les mondes 🌍</h1><div class="world"><div class="emoji">🌳</div><div style="flex:1">GREEN VALLEY<br><small>Démo graphique · 1 trou disponible</small></div><span style="color:#3b9c58">✓</span></div><div class="world lock"><div class="emoji">🏜️</div><div style="flex:1">DESERT DUNES<br><small>Bientôt disponible</small></div>🔒</div><div class="world lock"><div class="emoji">❄️</div><div style="flex:1">FROZEN PEAKS<br><small>Bientôt disponible</small></div>🔒</div><div class="world lock"><div class="emoji">🪐</div><div style="flex:1">COSMIC GOLF<br><small>Bientôt disponible</small></div>🔒</div><button class="btn" id="primary">JOUER À GREEN VALLEY ▶</button><button class="btn secondary" id="secondary">← ACCUEIL</button>`;document.getElementById('primary').onclick=play;document.getElementById('secondary').onclick=home}
+function play(){reset();scene='game';UI.ov.classList.add('hidden');setUI()}
+function pause(){if(scene!=='game')return;show('PAUSE','🌲','Découvre l’environnement illustré de Green Valley : chaque matériau a été redessiné avec la même palette.','REPRENDRE ▶',()=>{scene='game';UI.ov.classList.add('hidden')},'RECOMMENCER',play)}
+function finish(win){if(done)return;done=true;aim=null;locked=true;if(win)burst(ball.x,ball.y,'win');transition=win?1.05:.45;setUI();resultWin=win;}let resultWin=false;
+function showResult(win){let pts=win?Math.max(0,4-shots):0;show(win?'TROU RÉUSSI !':'3 COUPS UTILISÉS',win?'🏆':'⛳',win?`La balle est rentrée en <b>${shots} coup${shots>1?'s':''}</b>. <b>+${pts} points</b> ! Évalue surtout l’homogénéité du paysage.`:'Cette démo permet d’évaluer le terrain et les graphismes. Retente le passage de la rivière !','REJOUER LE TROU',play,'CHOISIR UN MONDE',worlds)}
+function screen(e){const rect=canvas.getBoundingClientRect();const portrait=window.matchMedia('(orientation:portrait)').matches;return portrait?{x:(e.clientY-rect.top)*W/rect.height,y:(rect.right-e.clientX)*H/rect.width}:{x:(e.clientX-rect.left)*W/rect.width,y:(e.clientY-rect.top)*H/rect.height}}
+function down(e){if(scene!=='game'||done||ball.moving||locked)return;e.preventDefault();stage.setPointerCapture?.(e.pointerId);let p=screen(e);aim={x:p.x,y:p.y,cx:p.x,cy:p.y};power=0;setUI()}
+function move(e){if(!aim||scene!=='game')return;e.preventDefault();let p=screen(e);aim.cx=p.x;aim.cy=p.y;let dx=aim.x-p.x,dy=aim.y-p.y;power=clamp(Math.hypot(dx,dy)/240,0,1);setUI()}
+function up(e){if(!aim||scene!=='game'||done)return;e.preventDefault();let dx=aim.x-aim.cx,dy=aim.y-aim.cy,dist=Math.hypot(dx,dy);aim=null;if(dist<13){power=0;setUI();return;}power=clamp(dist/240,0,1);const vel=330+power*710;ball.vx=dx/dist*vel;ball.vy=dy/dist*vel;ball.moving=true;locked=true;shots++;burst(ball.x,ball.y,'grass');setUI();}
+function bounceRock(x,y,r){if(!ball.moving)return;let dx=ball.x-x,dy=ball.y-y,dist=Math.hypot(dx,dy),min=r+R;if(dist>min||dist<.01)return;let nx=dx/dist,ny=dy/dist;ball.x=x+nx*min;ball.y=y+ny*min;let vn=ball.vx*nx+ball.vy*ny;if(vn<0){ball.vx-=1.48*vn*nx;ball.vy-=1.48*vn*ny;burst(ball.x,ball.y,'rock')}}
+function physics(dt){if(!ball.moving||done)return;let steps=4,ds=dt/steps;for(let k=0;k<steps;k++){let b=ball;const px=b.x,py=b.y;b.vy+=725*ds;b.vx+=wind*50*ds;b.x+=b.vx*ds;b.y+=b.vy*ds;b.spin+=b.vx*ds*.012;
+ // tree trunks and the hut have simple, invisible contact geometry: art has no image-based collision costs
+ if(b.x>246&&b.x<292&&b.y>ground(266)-100&&b.y<ground(266))bounceRock(267,ground(267)-51,21);
+ if(b.x>804&&b.x<865&&b.y>ground(836)-95&&b.y<ground(836))bounceRock(834,ground(834)-46,18);
+ if(b.x>302&&b.x<388&&b.y>ground(350)-144&&b.y<ground(350)-8){let edge=px<302?302:px>388?388:Math.abs(b.x-302)<Math.abs(b.x-388)?302:388;if(Math.abs(b.x-edge)<R+3){b.x=edge+(px<edge?-R-3:R+3);b.vx*=-.52;burst(b.x,b.y,'rock')}}
+ bounceRock(764,ground(764)-30,35);bounceRock(990,ground(990)-25,22);
+ if(isWater(b.x)){if(b.y>568){burst(b.x,567,'water');b.moving=false;b.vx=b.vy=0;if(shots>=3)finish(false);else{ball.x=TEE_X;ball.y=ground(TEE_X)-R-13;ball.moving=false;locked=false;}break;}}
+ else {let floor=ground(b.x)-R-13;if(b.y>=floor&&b.vy>0){b.y=floor;if(Math.abs(b.vy)>85){b.vy=-b.vy*.43;b.vx*=.90;burst(b.x,b.y+7,'grass')}else{b.vy=0;b.vx*=Math.exp(-4.4*ds);if(Math.abs(b.vx)<5)b.vx=0;}}}
+ // generous bounded cup acceptance, evaluated continuously so high-speed steps aren't skipped
+ if(Math.abs(b.x-HOLE_X)<22&&Math.abs(b.y-(ground(HOLE_X)-R-13))<17&&Math.hypot(b.vx,b.vy)<620){b.x=HOLE_X;b.y=ground(HOLE_X)-R-7;b.vx=b.vy=0;b.moving=false;finish(true);break;}
+ if(b.x>W+70||b.x<-70||b.y>H+80||b.y<-140){b.moving=false;if(shots>=3)finish(false);else{ball.x=TEE_X;ball.y=ground(TEE_X)-R-13;ball.moving=false;locked=false;}break;}
+ if(b.vy===0&&b.vx===0){b.moving=false;locked=false;break;}
+ }
+ // after a stroke ball stops, the user may take another stroke; water/out needs reset but consumes stroke
+ if(!done&&!ball.moving&&shots>=3){finish(false);} }
+function animate(dt){time+=dt;for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.life-=dt;if(p.life<=0){particles.splice(i,1);continue;}p.vy+=390*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;}if(transition>0){transition-=dt;if(transition<=0){transition=0;showResult(resultWin)}}}
+function ballDraw(){if(!ball)return;let b=ball;let shadowY=ground(b.x);if(!isWater(b.x))ell(b.x,shadowY-9,16,5,'#27543a6e');ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.spin);ell(0,0,R+1,R+1,'#32677c55');ell(-1,-2,R,R,'#fafff3');ell(-3,-5,4,3,'#ffffff');for(let [x,y] of [[2,-2],[-4,2],[3,5],[-6,-3]])ell(x,y,2,1.2,'#b9d3da');ctx.restore();}
+function aimDraw(){if(!aim||!ball||power===0)return;const dx=aim.x-aim.cx,dy=aim.y-aim.cy,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L;let len=70+power*164;ctx.save();ctx.strokeStyle='#174c596e';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(ball.x+ux*14+3,ball.y+uy*14+4);ctx.lineTo(ball.x+ux*len+3,ball.y+uy*len+4);ctx.stroke();ctx.strokeStyle='#ffffff';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(ball.x+ux*14,ball.y+uy*14);ctx.lineTo(ball.x+ux*len,ball.y+uy*len);ctx.stroke();ell(ball.x+ux*len,ball.y+uy*len,5,5,'#ffffff');ctx.restore();}
+function drawParticles(){for(const p of particles){ctx.save();ctx.globalAlpha=clamp(p.life/p.max,0,1);ell(p.x,p.y,p.size,p.size*.68,p.col);ctx.restore()}}
+function loop(timestamp){if(!last)last=timestamp;const dt=clamp((timestamp-last)/1000,0,.035);last=timestamp;animate(dt);if(scene==='game')physics(dt);seed=11;ctx.save();ctx.scale(canvas.width/W,canvas.height/H);drawWorld();if(ball){ballDraw();aimDraw();}drawParticles();ctx.restore();requestAnimationFrame(loop)}
+stage.addEventListener('pointerdown',down);stage.addEventListener('pointermove',move);stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',()=>{aim=null;power=0;setUI()});document.getElementById('pause').onclick=pause;window.addEventListener('blur',()=>{if(scene==='game'&&ball&&!ball.moving)pause()});reset();home();requestAnimationFrame(loop);
+})();</script></body></html>
